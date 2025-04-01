@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY main.py /app/main.py
 
-RUN pip3 install smtplib kubernetes
+RUN pip install kubernetes
 
 ENV SMTP_HOST=""
 ENV SMTP_PORT=""
@@ -13,4 +13,4 @@ ENV SMTP_PASSWORD=""
 ENV FROM_EMAIL=""
 ENV TO_EMAILS=""
 
-CMD ["python3", "/app/main.py"]
+CMD ["python", "/app/main.py"]
