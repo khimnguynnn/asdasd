@@ -1,14 +1,11 @@
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def main():
     config.load_incluster_config()
     
     configuration = client.Configuration()
-    configuration.verify_ssl = False
+    configuration.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
     api_client = client.ApiClient(configuration)
     v1 = client.CoreV1Api(api_client=api_client)
     w = watch.Watch()
