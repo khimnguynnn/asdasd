@@ -1,5 +1,8 @@
 from kubernetes import client, config, watch
 
+configuration = client.Configuration()
+configuration.verify_ssl = False
+
 def main():
     config.load_incluster_config()
 
