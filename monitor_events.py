@@ -1,36 +1,26 @@
-from kubernetes import client, config, watch
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
+from urllib3.exceptions import InsecureRequestWarning
+import urllib3
 
-def list_pods(api_client):
-    v1 = client.CoreV1Api(api_client=api_client)
-    pods = v1.list_pod_for_all_namespaces(watch=False)
-    for pod in pods.items:
-        print(f"📌 Pod: {pod.metadata.name} | Namespace: {pod.metadata.namespace} | Status: {pod.status.phase}")
+urllib3.disable_warnings(InsecureRequestWarning)
 
-def watch_pods(api_client):
-    v1 = client.CoreV1Api(api_client=api_client)
-    w = watch.Watch()
-    print("🔍 Đang giám sát các Pod trong cluster...")
-    for event in w.stream(v1.list_pod_for_all_namespaces):
-        pod = event["object"]
-        print(f"📢 {event['type']} - Pod: {pod.metadata.name} | Namespace: {pod.metadata.namespace} | Status: {pod.status.phase}")
+def list_pods():
+    configuration = client.Configuration()
+    configuration.verify_ssl = False
+
+    v1 = client.CoreV1Api(client.ApiClient(configuration))
+    try:
+        pods = v1.list_pod_for_all_namespaces(watch=False)
+        for pod in pods.items:
+            print(f"📌 Pod: {pod.metadata.name} | Namespace: {pod.metadata.namespace} | Status: {pod.status.phase}")
+    except ApiException as e:
+        print(f"❌ Lỗi khi lấy danh sách Pod: {e}")
 
 def main():
     try:
-        configuration = client.Configuration()
-        configuration.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-        configuration.verify_ssl = True
-        
-        with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as token_file:
-            token = token_file.read().strip()
-        
-        configuration.api_key = {"authorization": "Bearer " + token}
-        
-        api_client = client.ApiClient(configuration)
-        
-        print("✅ Kết nối bằng Service Account trong cluster")
-        list_pods(api_client)
-        watch_pods(api_client)
-
+        config.load_incluster_config()
+        list_pods()
     except Exception as e:
         print(f"❌ Lỗi khi kết nối Kubernetes API: {e}")
 
