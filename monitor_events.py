@@ -2,10 +2,14 @@ from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
 
 def main():
+    # Load cấu hình từ trong Pod
     config.load_incluster_config()
     
+    # Tạo API Client đúng với API Server URL
     configuration = client.Configuration()
     configuration.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+    configuration.host = "https://10.0.0.11:6443"  # Sửa thành địa chỉ API Server của bạn
+    configuration.verify_ssl = True
     api_client = client.ApiClient(configuration)
     v1 = client.CoreV1Api(api_client=api_client)
     w = watch.Watch()
