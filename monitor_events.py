@@ -1,35 +1,38 @@
 from kubernetes import client, config, watch
-from kubernetes.client.rest import ApiException
 
-def main():
-    # Load cấu hình từ trong Pod
-    config.load_incluster_config()
-    
-    # Tạo API Client đúng với API Server URL
-    configuration = client.Configuration()
-    configuration.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-    configuration.host = "https://10.0.0.11:6443"  # Sửa thành địa chỉ API Server của bạn
-    configuration.verify_ssl = True
-    api_client = client.ApiClient(configuration)
+def list_pods(api_client):
+    v1 = client.CoreV1Api(api_client=api_client)
+    pods = v1.list_pod_for_all_namespaces(watch=False)
+    for pod in pods.items:
+        print(f"📌 Pod: {pod.metadata.name} | Namespace: {pod.metadata.namespace} | Status: {pod.status.phase}")
+
+def watch_pods(api_client):
     v1 = client.CoreV1Api(api_client=api_client)
     w = watch.Watch()
+    print("🔍 Đang giám sát các Pod trong cluster...")
+    for event in w.stream(v1.list_pod_for_all_namespaces):
+        pod = event["object"]
+        print(f"📢 {event['type']} - Pod: {pod.metadata.name} | Namespace: {pod.metadata.namespace} | Status: {pod.status.phase}")
 
-    print("Đang theo dõi các sự kiện trên toàn bộ cluster...")
-
+def main():
     try:
-        for event in w.stream(v1.list_event_for_all_namespaces):
-            print(f"\nType: {event['type']}")
-            print(f"Namespace: {event['object'].metadata.namespace}")
-            print(f"Name: {event['object'].metadata.name}")
-            print(f"Reason: {event['object'].reason}")
-            print(f"Message: {event['object'].message}")
-            print(f"Timestamp: {event['object'].last_timestamp}")
-    except ApiException as e:
-        print(f"Exception when calling Kubernetes API: {e}")
-    except KeyboardInterrupt:
-        print("\nDừng theo dõi.")
-    finally:
-        w.stop()
+        configuration = client.Configuration()
+        configuration.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+        configuration.verify_ssl = True
+        
+        with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as token_file:
+            token = token_file.read().strip()
+        
+        configuration.api_key = {"authorization": "Bearer " + token}
+        
+        api_client = client.ApiClient(configuration)
+        
+        print("✅ Kết nối bằng Service Account trong cluster")
+        list_pods(api_client)
+        watch_pods(api_client)
 
-if __name__ == '__main__':
+    except Exception as e:
+        print(f"❌ Lỗi khi kết nối Kubernetes API: {e}")
+
+if __name__ == "__main__":
     main()
