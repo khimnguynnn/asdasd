@@ -1,15 +1,10 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import InsecureRequestWarning
-import urllib3
-
-urllib3.disable_warnings(InsecureRequestWarning)
 
 def list_pods():
-    configuration = client.Configuration()
-    configuration.verify_ssl = False
 
-    v1 = client.CoreV1Api(client.ApiClient(configuration))
+    v1 = client.CoreV1Api()
     try:
         pods = v1.list_pod_for_all_namespaces(watch=False)
         for pod in pods.items:
