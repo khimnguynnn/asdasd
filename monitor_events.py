@@ -1,12 +1,16 @@
 from kubernetes import client, config, watch
+from kubernetes.client.rest import ApiException
+import urllib3
 
-configuration = client.Configuration()
-configuration.verify_ssl = False
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def main():
     config.load_incluster_config()
-
-    v1 = client.CoreV1Api()
+    
+    configuration = client.Configuration()
+    configuration.verify_ssl = False
+    api_client = client.ApiClient(configuration)
+    v1 = client.CoreV1Api(api_client=api_client)
     w = watch.Watch()
 
     print("Đang theo dõi các sự kiện trên toàn bộ cluster...")
@@ -19,6 +23,8 @@ def main():
             print(f"Reason: {event['object'].reason}")
             print(f"Message: {event['object'].message}")
             print(f"Timestamp: {event['object'].last_timestamp}")
+    except ApiException as e:
+        print(f"Exception when calling Kubernetes API: {e}")
     except KeyboardInterrupt:
         print("\nDừng theo dõi.")
     finally:
