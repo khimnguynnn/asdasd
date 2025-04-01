@@ -1,16 +1,10 @@
-FROM python:3.9-slim
+# Dockerfile
+FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY main.py /app/main.py
-
 RUN pip install kubernetes
 
-ENV SMTP_HOST=""
-ENV SMTP_PORT=""
-ENV SMTP_USERNAME=""
-ENV SMTP_PASSWORD=""
-ENV FROM_EMAIL=""
-ENV TO_EMAILS=""
+COPY monitor_events.py .
 
-CMD ["python", "/app/main.py"]
+CMD ["python", "monitor_events.py"]
