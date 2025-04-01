@@ -3,6 +3,9 @@ from kubernetes import client, config, watch
 from kubernetes.client import ApiException
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 def get_smtp_config():
     """Lấy thông tin SMTP từ ConfigMap trong Kubernetes hoặc từ biến môi trường."""
