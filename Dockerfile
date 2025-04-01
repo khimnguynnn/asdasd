@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY main.py /app/main.py
 
-RUN pip install --no-cache-dir smtplib kubernetes
+RUN pip install smtplib kubernetes
 
 ENV SMTP_HOST=""
 ENV SMTP_PORT=""
