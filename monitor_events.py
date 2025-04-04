@@ -72,7 +72,7 @@ def watch_pods():
         event_type = event['type']
         
         if event_type in ['ADDED', 'DELETED']:
-            subject = f"Sự kiện Pod: {event_type}"
+            subject = f"Pod Event: {event_type}"
             body = f"Pod: {pod.metadata.name}\nNamespace: {pod.metadata.namespace}\nStatus: {pod.status.phase}\nEvent: {event_type}"
             
             send_email(subject, body, smtp_config)
